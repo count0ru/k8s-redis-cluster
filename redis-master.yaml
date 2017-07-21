@@ -1,0 +1,38 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    name: redis
+    redis-sentinel: "true"
+    role: master
+  name: redis-master
+  namespace: redis-cluster
+spec:
+  containers:
+    - name: master
+      image: count0ru/redis-with-sentinels:3.2.8
+      env:
+        - name: MASTER
+          value: "true"
+      ports:
+        - containerPort: 6379
+      resources:
+        limits:
+          cpu: "0.1"
+      volumeMounts:
+        - mountPath: /redis-master-data
+          name: data
+    - name: sentinel
+      image: count0ru/redis-with-sentinels:3.2.8
+      env:
+        - name: SENTINEL
+          value: "true"
+        - name: DOWN_AFTER_MILLISECONDS
+          value: "500"
+        - name: FAILOVER_TIMEOUT
+          value: "10000"
+      ports:
+        - containerPort: 26379
+  volumes:
+    - name: data
+      emptyDir: {}
